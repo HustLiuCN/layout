@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "outDir": "./lib",
+    "allowJs": true,
+    "target": "ES6",
+    "module": "commonjs",
+    // "baseUrl": "./",
+    "declaration": true
+  },
+  "include": [
+    "./src/*",
+  ],
+  "exclude": [
+    "./mock-data",
+    "./demos"
+  ]
+}
