@@ -1,0 +1,32 @@
+* {
+  margin: 0;padding: 0;outline: none;box-sizing: border-box;
+}
+
+html, body, main {
+  width: 100%;
+  height: 100%;
+}
+
+main {
+  overflow: hidden;
+  background-color: #eee;
+}
+
+canvas {
+  display: block;
+  width: 400px;
+  height: 300px;
+  margin: 20px auto;
+  background-color: #fff;
+}
+
+#toolbar {
+  display: flex;
+  justify-content: center;
+  margin: 10px auto;
+}
+.toolbar-btn {
+  padding: 5px 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+}

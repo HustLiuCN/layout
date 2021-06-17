@@ -4,7 +4,7 @@ const webpackConfig = {
 	mode: process.env.NODE_ENV || 'production',
 	// watch: true,
 	entry: {
-		layout: './src/demo/layout',
+		word: './src/word',
 	},
 	output: {
 		filename: '[name].build.js',
