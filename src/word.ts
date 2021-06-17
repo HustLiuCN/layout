@@ -51,13 +51,8 @@ class WordCloud {
       const len = ctx.measureText(text).width
       const { x, y } = this._getPos(len)
       this._paintText(text, { x, y })
-      this.pos.push({
-        id,
-        x,
-        y,
-        w: len,
-        h: 20 * ratio,
-      })
+      const rect: IWordRect = { x, y, w: len, h: 20 * ratio }
+      this.pos.push({ id, ...rect })
     }
   }
 
@@ -97,34 +92,10 @@ class WordCloud {
   /** 所有词组 */
   words: IWord[]
   /** 记录词组的绘制位置 */
-  pos: IWordPos[]
+  pos: IWordRect[]
 }
 
 new WordCloud({
   cvs,
   words,
 })
-
-interface IWordCloud {
-  words: IWord[]
-  cvs: HTMLCanvasElement
-}
-
-interface IWord {
-  text: string
-  weight: number
-  id?: number
-}
-
-interface IWordPos {
-  id: number
-  x: number
-  y: number
-  w: number
-  h: number
-}
-
-interface IPos {
-  x: number
-  y: number
-}
