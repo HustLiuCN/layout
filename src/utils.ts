@@ -16,3 +16,11 @@ export function _checkOverlap(rect1: IWordRect, rect2: IWordRect) {
   return Math.min(rect1.x + rect1.w, rect2.x + rect2.w) > Math.max(rect1.x, rect2.x) &&
           Math.min(rect1.y + rect1.h, rect2.y + rect2.h) > Math.max(rect1.y, rect2.y)
 }
+
+/**
+ * 根据权重计算颜色
+ */
+export function _getColor(weight: number) {
+  const opacity = (Math.floor(weight / 4 * 120) + 125).toString(16)
+  return `#FFEEAA${opacity === '0' ? '00' : opacity}`
+}

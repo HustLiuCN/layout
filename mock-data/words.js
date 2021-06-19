@@ -28,7 +28,7 @@ const names = [
 
 const mixin = names => names.map((n, i) => ({
   text: n,
-  weight: i % 5,
+  weight: Math.floor(Math.random() * 5),
 }))
 
 export default mixin(names)

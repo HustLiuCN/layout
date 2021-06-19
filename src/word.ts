@@ -1,6 +1,6 @@
 import words from '../mock-data/words'
 import Toolbar from './toolbar'
-import { _changeSize } from './utils'
+import { _changeSize, _getColor } from './utils'
 
 /**
  * 创建 canvas
@@ -34,7 +34,7 @@ class WordCloud {
 
   _initToolbar = () => {
     new Toolbar([
-      ['平铺', this._tile]
+      ['相同字号平铺', () => this._tile('easy')]
     ])
   }
 
@@ -42,16 +42,25 @@ class WordCloud {
    * 平铺绘制
    * 从画布左上角开始, 所有单词字号相同
    */
-  _tile = () => {
-    const { ctx, ratio, words, pos } = this
+  _tile = (mode: string) => {
+    // clear
+    this._clear()
+
+    const { ctx, ratio, words } = this
     // TODO
-    ctx.font = _changeSize(20 * ratio)
-    for (let word of words) {
-      const { text, id } = word
+    for (const word of words) {
+      const { text, weight, id } = word
+      // save 当前画布状态
+      ctx.save()
+      // 修改字体
+      const size = 16 + weight * 3
+      ctx.font = _changeSize(size * ratio)
       const len = ctx.measureText(text).width
       const { x, y } = this._getPos(len)
-      this._paintText(text, { x, y })
-      const rect: IWordRect = { x, y, w: len, h: 20 * ratio }
+      const rect: IWordRect = { x, y, w: len, h: size * ratio }
+      this._paintText(text, rect, weight)
+      // restore 修改样式之前的状态
+      ctx.restore()
       this.pos.push({ id, ...rect })
     }
   }
@@ -76,14 +85,20 @@ class WordCloud {
   /**
    * 绘制文字
    */
-  _paintText = (text: string, { x, y }: IPos) => {
-    this.ctx.fillText(text, x, y)
+  _paintText = (text: string, { x, y, w, h }: IWordRect, weight?: number) => {
+    const { ctx } = this
+    const color = _getColor(weight)
+    ctx.fillStyle = color
+    ctx.fillRect(x, y, w, h)
+    ctx.fillStyle = '#000000'
+    ctx.fillText(text, x, y)
   }
 
   _clear = () => {
     const { cvs, ctx } = this
     const { width, height } = cvs
     ctx.clearRect(0, 0, width, height)
+    this.pos = []
   }
 
   cvs: HTMLCanvasElement
