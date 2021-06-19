@@ -28,6 +28,9 @@ class WordCloud {
     this.words = words.map((w, i) => ({ ...w, id: i }))
     this.pos = []
 
+    console.log(this.words.map(w => w.weight));
+
+
     // this._initCvs()
     this._initToolbar()
   }
@@ -55,9 +58,12 @@ class WordCloud {
       // 修改字体
       const size = 16 + weight * 3
       ctx.font = _changeSize(size * ratio)
-      const len = ctx.measureText(text).width
-      const { x, y } = this._getPos(len)
-      const rect: IWordRect = { x, y, w: len, h: size * ratio }
+      // 文字长度
+      const w = ctx.measureText(text).width + 8 * ratio
+      // 文字布局起点
+      const { x, y } = this._getPosByLine(w)
+      // 文字布局信息
+      const rect: IWordRect = { x, y, w, h: (size + 8) * ratio }
       this._paintText(text, rect, weight)
       // restore 修改样式之前的状态
       ctx.restore()
@@ -65,19 +71,23 @@ class WordCloud {
     }
   }
 
-  _getPos = (len: number) => {
+  /**
+   *
+   */
+  _getPosByLine = (len: number) => {
     const { pos, cvs } = this
-    const { width, height } = cvs
+    const { width } = cvs
     const last = pos[pos.length - 1]
     if (!last) {
       return { x: 0, y: 0 }
     }
-    const { x, y, w, h } = last
+    const { x, y, w } = last
     let ex = x + w
     let ey = y
-    if (ex + len > width) {
+    if (ex + len > width) {   // 紧跟着最后一个布局会超出画布
+      let maxY = Math.max.apply(null, pos.map(p => p.y + p.h))
       ex = 0
-      ey = y + h
+      ey = maxY
     }
     return { x: ex, y: ey }
   }
@@ -86,12 +96,15 @@ class WordCloud {
    * 绘制文字
    */
   _paintText = (text: string, { x, y, w, h }: IWordRect, weight?: number) => {
-    const { ctx } = this
+    const { ctx, ratio } = this
     const color = _getColor(weight)
     ctx.fillStyle = color
     ctx.fillRect(x, y, w, h)
+    ctx.strokeStyle = '#000000'
+    ctx.lineWidth = 1
+    ctx.strokeRect(x, y, w, h)
     ctx.fillStyle = '#000000'
-    ctx.fillText(text, x, y)
+    ctx.fillText(text, x + 4 * ratio, y + 4 * ratio)
   }
 
   _clear = () => {
