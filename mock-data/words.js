@@ -26,9 +26,4 @@ const names = [
   '周维雪',
 ]
 
-const mixin = names => names.map((n, i) => ({
-  text: n,
-  weight: Math.floor(Math.random() * 5),
-}))
-
-export default mixin(names)
+export default names

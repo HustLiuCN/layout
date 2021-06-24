@@ -1,5 +1,5 @@
 interface IWordCloud {
-  words: IWord[]
+  // words: IWord[]
   cvs: HTMLCanvasElement
 }
 
