@@ -13,7 +13,13 @@ class Toolbar {
       const o = document.createElement('button')
       o.className = 'toolbar-btn'
       o.innerText = tool[0]
-      o.addEventListener('click', tool[1])
+      o.addEventListener('click', () => {
+        document.querySelectorAll('.toolbar-btn').forEach(btn => {
+          btn.classList.remove('active')
+        })
+        o.classList.add('active')
+        tool[1]()
+      })
       oFrag.appendChild(o)
     }
     this.container.appendChild(oFrag)

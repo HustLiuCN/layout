@@ -1,6 +1,7 @@
 interface IWordCloud {
   // words: IWord[]
   cvs: HTMLCanvasElement
+  axisCvs: HTMLCanvasElement
 }
 
 interface IWord {

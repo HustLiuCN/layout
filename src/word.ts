@@ -1,6 +1,6 @@
 import words from '../mock-data/words'
 import Toolbar from './toolbar'
-import { mixin, _changeSize, _checkOverlap, _findNoBottomItem, _findNoRightItem, _getColor } from './utils'
+import { mixin, mixin2, _changeSize, _checkHasOverlap, _checkTwoOverlap, _findNoBottomItem, _findNoRightItem, _getColor } from './utils'
 
 /**
  * 创建 canvas
@@ -12,40 +12,70 @@ const rect = cvs.getBoundingClientRect()
 cvs.width = rect.width * ratio
 cvs.height = rect.height * ratio
 
+const axisCvs = document.getElementById('canvas') as HTMLCanvasElement
+axisCvs.width = rect.width * ratio
+axisCvs.height = rect.height * ratio
+
 /**
  * WordCloud
  */
 class WordCloud {
   constructor({
     cvs,
+    axisCvs,
   }: IWordCloud) {
     this.cvs = cvs
     this.ctx = cvs.getContext('2d')
     this.ratio = window.devicePixelRatio || 1
     this.ctx.textBaseline = 'top'
 
-    this.words = mixin(words).map((w, i) => ({ ...w, id: i }))
+    this.axisCvs = axisCvs
+    // this.words = mixin(words).map((w, i) => ({ ...w, id: i }))
+    this.words = mixin2(words).map((w, i) => ({ ...w, id: i }))
+
     this.pos = []
+    this.origin = { x: 0, y: 0 }
+
+    // 方向
+    this.dir = 0
 
     this._initToolbar()
   }
 
   _initToolbar = () => {
     new Toolbar([
-      ['平铺', () => this._tile('easy')]
+      ['平铺', () => this._tile('easy')],
+      ['紧凑', () => this._tile('compact')],
+      ['填充', () => this._tile('fill')],
+      ['排序', () => this._sort()],
+      ['随机权重', () => this._randomWeight()],
+      ['规律权重', () => this._ruledWeight()],
+      ['中心布局', () => this._origin()],
+      ['左上角布局', () => this._origin(0, 0)]
     ])
   }
 
-  _remixWords = () => {
+  _randomWeight = () => {
     this.words = mixin(words).map((w, i) => ({ ...w, id: i }))
+  }
+  _ruledWeight = () => {
+    this.words = mixin2(words).map((w, i) => ({ ...w, id: i }))
+  }
+  _sort = () => {
+    this.words.sort((a, b) => b.weight - a.weight)
+  }
+  _origin = (x?: number, y?: number) => {
+    const { width, height } = this.cvs
+    this.origin = { x: x ?? width / 2, y: y ?? height / 2 }
+    this._sort()
+    this._tile('origin')
   }
 
   /**
    * 平铺绘制
    * 从画布左上角开始, 所有单词字号相同
    */
-  _tile = (mode: string) => {
-    this._remixWords()
+  _tile = (mode?: string) => {
     // clear
     this._clear()
 
@@ -56,15 +86,30 @@ class WordCloud {
       // save 当前画布状态
       ctx.save()
       // 修改字体
-      const size = 16 + weight * 3
+      const size = 16 + weight * 4
       ctx.font = _changeSize(size * ratio)
       // 矩形长度
       const w = ctx.measureText(text).width + 8 * ratio
       // 矩形高度
       const h = (size + 8) * ratio
       // 矩形布局起点
-      // const { x, y } = this._getPosByLine(w)
-      const { x, y } = this._getPosCompact(w, h)
+      let fn
+      switch (mode) {
+        case 'easy':
+          fn = this._getPosByLine
+          break
+        case 'compact':
+          fn = this._getPosCompact
+          break
+        case 'origin':
+          fn = this._getPosFromOrigin
+          break
+        case 'fill':
+        default:
+          fn = this._getPosFilled
+          break
+      }
+      const { x, y } = fn(w, h)
       // 矩形布局信息
       const rect: IWordRect = { x, y, w, h }
       this._paintText(text, rect, weight)
@@ -77,10 +122,10 @@ class WordCloud {
   /**
    * 优先当前行, 当前行排满后排入下一行, 且保证与当前行无重叠, 即以当前行最大的坐标 y 作为下一行起点
    */
-  _getPosByLine = (len: number) => {
-    const { pos, cvs } = this
+  _getPosByLine = (len: number, h: number) => {
+    const { pos, cvs, origin } = this
     if (!pos.length) {
-      return { x: 0, y: 0 }
+      return origin
     }
     const { width } = cvs
     const last = pos[pos.length - 1]
@@ -101,17 +146,15 @@ class WordCloud {
    * 从上至下: 以最小 y 坐标作为起点
    */
   _getPosCompact = (w: number, h: number) => {
-    const { pos } = this
+    const { pos, origin, cvs } = this
     if (!pos.length) {
-      return { x: 0, y: 0 }
+      return origin
     }
-    const xOrder = this._orderByX(pos)
-    const yOrder = this._orderByY(pos)
     const noRightList = _findNoRightItem(pos)
     for (let item of noRightList) {
       let x = item.x + item.w
       let y = item.y
-      let isOverlap = this._checkOverlap({ x, y, w, h })
+      let isOverlap = _checkHasOverlap({ x, y, w, h }, pos, cvs)
       if (!isOverlap) {
         return { x, y }
       }
@@ -121,7 +164,7 @@ class WordCloud {
     for (let item of noBottomList) {
       let x = item.x
       let y = item.y + item.h
-      let isOverlap = this._checkOverlap({ x, y, w, h })
+      let isOverlap = _checkHasOverlap({ x, y, w, h }, pos, cvs)
       if (!isOverlap) {
         return { x, y }
       }
@@ -131,24 +174,67 @@ class WordCloud {
   }
 
   /**
-   * 判断 rect 与其他画布中的矩形是否相交
+   * 尽可能填充整个画布, 以每一个坐标相交点作为起点
    */
-  _checkOverlap = (rect: IWordRect) => {
-    const { cvs, pos } = this
-    const { x, y, w, h } = rect
-    if (x + w > cvs.width) {
-      return true
+  _getPosFilled = (w: number, h: number) => {
+    const { pos, origin, cvs } = this
+    if (!pos.length) {
+      return origin
     }
-    for (let p of pos) {
-      if (_checkOverlap(rect, p)) {
-        return true
+    const xAxis = [0, ...new Set(pos.map(p => p.x + p.w))].sort((a, b) => a - b)
+    const yAxis = [0, ...new Set(pos.map(p => p.y + p.h))].sort((a, b) => a - b)
+    for (let y of yAxis) {
+      for (let x of xAxis) {
+        if (!_checkHasOverlap({ x, y, w, h}, pos, cvs)) {
+          return { x, y }
+        }
       }
     }
-    return false
+
+    console.log('===no position===')
+    return { x: 350, y: 250 }
   }
 
-  _orderByX = (pos: IWordRect[]) => pos.slice().sort((a, b) => (a.x + b.w - b.x - b.w))
-  _orderByY = (pos: IWordRect[]) => pos.slice().sort((a, b) => (a.y + b.h - b.y - b.h))
+  /**
+   * 从中心向四周辐射
+   */
+  _getPosFromOrigin = (w: number, h: number) => {
+    const { pos, origin, cvs } = this
+    if (!pos.length) {
+      return { x: origin.x - w / 2, y: origin.y - h / 2 }
+    }
+
+    const xAxis = [...new Set(pos.map(p => p.x).concat(pos.map(p => p.x + p.w)))].sort((a, b) => a - b)
+    const yAxis = [...new Set(pos.map(p => p.y).concat(pos.map(p => p.y + p.h)))].sort((a, b) => a - b)
+
+    for (let y of yAxis) {
+      for (let x of xAxis) {
+        // left-top
+        let a = { x, y, w, h}
+        if (!_checkHasOverlap(a, pos, cvs)) {
+          return { x, y }
+        }
+        // left-bottom
+        let b = { x, y: y - h, w, h }
+        if (!_checkHasOverlap(b, pos, cvs)) {
+          return { x, y: y - h }
+        }
+        // right-top
+        let c = { x: x - w, y, w, h }
+        if (!_checkHasOverlap(c, pos, cvs)) {
+          return { x: x - w, y }
+        }
+        // right-bottom
+        let d = { x: x - w, y: - h, w, h }
+        if (!_checkHasOverlap(d, pos, cvs)) {
+          return { x: x - w, y: y - h }
+        }
+      }
+    }
+
+    console.log('===no position===');
+    return { x: 550, y: 350 }
+  }
 
   /**
    * 绘制文字
@@ -165,6 +251,18 @@ class WordCloud {
     ctx.fillText(text, x + 4 * ratio, y + 4 * ratio)
   }
 
+  /**
+   * 绘制直线
+   */
+  _paintLine = ([sx, sy], [ex, ey]) => {
+    const ctx = this.axisCvs.getContext('2d')
+    ctx.beginPath()
+    ctx.moveTo(sx, sy)
+    ctx.lineTo(ex, ey)
+    ctx.stroke()
+    ctx.closePath()
+  }
+
   _clear = () => {
     const { cvs, ctx } = this
     const { width, height } = cvs
@@ -175,14 +273,16 @@ class WordCloud {
   cvs: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   ratio: number
+  axisCvs: HTMLCanvasElement
   /** 所有词组 */
   words: IWord[]
   /** 记录词组的绘制位置 */
+  origin: { x: number, y: number }
   pos: IWordRect[]
-  __posInfo: IWordRect[]
-  __xOrderPos: IWordRect[]
+  dir: number     // 0,1,2,3 -> 右,下,左,上
 }
 
 new WordCloud({
   cvs,
+  axisCvs,
 })

@@ -12,12 +12,22 @@ main {
   background-color: #eee;
 }
 
-canvas {
-  display: block;
-  width: 400px;
-  height: 300px;
+.canvas-box {
+  position: relative;
+  width: 600px;
+  height: 400px;
   margin: 20px auto;
+}
+canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 600px;
+  height: 400px;
   background-color: #fff;
+}
+#wrapper {
+  background-color: transparent;
 }
 
 #toolbar {
@@ -27,6 +37,11 @@ canvas {
 }
 .toolbar-btn {
   padding: 5px 10px;
+  margin-right: 5px;
   background-color: #fff;
   border: 1px solid #ddd;
+}
+.toolbar-btn.active {
+  background-color: #1890ff;
+  color: #fff;
 }
