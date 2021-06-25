@@ -109,7 +109,7 @@ class WordCloud {
           fn = this._getPosFilled
           break
       }
-      const { x, y } = fn(w, h)
+      const { x, y } = fn(w, h) ?? { x: 0, y: 0 }
       // 矩形布局信息
       const rect: IWordRect = { x, y, w, h }
       this._paintText(text, rect, weight)
@@ -170,7 +170,6 @@ class WordCloud {
       }
     }
     console.log('===no position===')
-    return { x: 350, y: 250}
   }
 
   /**
@@ -192,7 +191,6 @@ class WordCloud {
     }
 
     console.log('===no position===')
-    return { x: 350, y: 250 }
   }
 
   /**
@@ -200,40 +198,48 @@ class WordCloud {
    */
   _getPosFromOrigin = (w: number, h: number) => {
     const { pos, origin, cvs } = this
+    const ox = origin.x - w / 2
+    const oy = origin.y - h / 2
     if (!pos.length) {
-      return { x: origin.x - w / 2, y: origin.y - h / 2 }
+      return { x: ox, y: oy }
     }
 
-    const xAxis = [...new Set(pos.map(p => p.x).concat(pos.map(p => p.x + p.w)))].sort((a, b) => a - b)
-    const yAxis = [...new Set(pos.map(p => p.y).concat(pos.map(p => p.y + p.h)))].sort((a, b) => a - b)
+    const xAxis = [...new Set(pos.map(p => p.x).concat(pos.map(p => p.x + p.w)))]
+    const yAxis = [...new Set(pos.map(p => p.y).concat(pos.map(p => p.y + p.h)))]
+    const newAxis = []
 
     for (let y of yAxis) {
       for (let x of xAxis) {
-        // left-top
-        let a = { x, y, w, h}
-        if (!_checkHasOverlap(a, pos, cvs)) {
-          return { x, y }
-        }
-        // left-bottom
-        let b = { x, y: y - h, w, h }
-        if (!_checkHasOverlap(b, pos, cvs)) {
-          return { x, y: y - h }
-        }
-        // right-top
-        let c = { x: x - w, y, w, h }
-        if (!_checkHasOverlap(c, pos, cvs)) {
-          return { x: x - w, y }
-        }
-        // right-bottom
-        let d = { x: x - w, y: - h, w, h }
-        if (!_checkHasOverlap(d, pos, cvs)) {
-          return { x: x - w, y: y - h }
-        }
+        newAxis.push([x, y])
       }
     }
 
-    console.log('===no position===');
-    return { x: 550, y: 350 }
+    newAxis.sort((a, b) => Math.pow(a[0] - ox, 2) + Math.pow(a[1] - oy, 2) - Math.pow(b[0] - ox, 2) - Math.pow(b[1] - oy, 2))
+    for (let axis of newAxis) {
+      let [x, y] = axis
+      // left-top
+      let a = { x, y, w, h}
+      if (!_checkHasOverlap(a, pos, cvs)) {
+        return { x, y }
+      }
+      // left-bottom
+      let b = { x, y: y - h, w, h }
+      if (!_checkHasOverlap(b, pos, cvs)) {
+        return { x, y: y - h }
+      }
+      // right-top
+      let c = { x: x - w, y, w, h }
+      if (!_checkHasOverlap(c, pos, cvs)) {
+        return { x: x - w, y }
+      }
+      // right-bottom
+      let d = { x: x - w, y: - h, w, h }
+      if (!_checkHasOverlap(d, pos, cvs)) {
+        return { x: x - w, y: y - h }
+      }
+    }
+
+    console.log('===no position===')
   }
 
   /**
