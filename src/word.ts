@@ -256,6 +256,12 @@ class WordCloud {
     ctx.fillStyle = '#000000'
     ctx.fillText(text, x + 4 * ratio, y + 4 * ratio)
   }
+  _paintText2 = (text: string, { x, y, w, h }: IWordRect, weight?: number) => {
+    const { ctx, ratio } = this
+    const color = _getColor(weight)
+    ctx.fillStyle = color
+    ctx.fillText(text, x + 4 * ratio, y + 4 * ratio)
+  }
 
   /**
    * 绘制直线

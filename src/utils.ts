@@ -61,16 +61,14 @@ export function _checkHasOverlap(rect: IWordRect, rectList: IWordRect[], { width
  * 根据权重计算颜色
  */
 const COLORS = [
-  '#ffccc7',
-  '#ffe7ba',
-  '#eaff8f',
-  '#bae7ff',
-  '#efdbff',
+  '#fa541c',
+  '#a0d911',
+  '#36cfc9',
+  '#1890ff',
+  '#f759ab',
 ]
 export function _getColor(weight: number) {
-  // const opacity = (Math.floor(weight / 4 * 120) + 135).toString(16)
-  // return `#FFEEAA${opacity === '0' ? '00' : opacity}`
-  return COLORS[weight]
+  return `${COLORS[weight]}80`
 }
 
 /**
