@@ -14,16 +14,16 @@ main {
 
 .canvas-box {
   position: relative;
-  width: 600px;
-  height: 400px;
+  width: 800px;
+  height: 600px;
   margin: 20px auto;
 }
 canvas {
   position: absolute;
   left: 0;
   top: 0;
-  width: 600px;
-  height: 400px;
+  width: 800px;
+  height: 600px;
   background-color: #fff;
 }
 #wrapper {

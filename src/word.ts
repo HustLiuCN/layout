@@ -112,7 +112,7 @@ class WordCloud {
       const { x, y } = fn(w, h) ?? { x: 0, y: 0 }
       // 矩形布局信息
       const rect: IWordRect = { x, y, w, h }
-      this._paintText(text, rect, weight)
+      this._paintText2(text, rect, weight)
       // restore 修改样式之前的状态
       ctx.restore()
       this.pos.push({ id, ...rect })

@@ -68,7 +68,7 @@ const COLORS = [
   '#f759ab',
 ]
 export function _getColor(weight: number) {
-  return `${COLORS[weight]}80`
+  return `${COLORS[weight]}`
 }
 
 /**

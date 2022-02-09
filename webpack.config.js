@@ -5,6 +5,8 @@ const webpackConfig = {
 	// watch: true,
 	entry: {
 		word: './src/word',
+		line: './src/line',
+		simulator: './src/simulator',
 	},
 	output: {
 		filename: '[name].build.js',
