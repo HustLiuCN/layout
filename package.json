@@ -28,6 +28,7 @@
   "author": "liupd",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.25.0",
     "express": "^4.17.1"
   }
 }

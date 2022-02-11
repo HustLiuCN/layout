@@ -18,7 +18,32 @@ interface IWordRect {
   h: number
 }
 
+/** position */
 interface IPos {
   x: number
   y: number
+}
+
+/** node */
+interface INode {
+  id: string;
+  x: number;
+  y: number;
+  color?: string;
+  strokeColor?: string;
+  fillColor?: string;
+}
+/** circle */
+interface ICircle extends INode {
+  r: number;
+}
+/** edge */
+interface IEdge {
+  source: string;
+  target: string;
+  value?: number;
+}
+/** fish eye */
+interface IFishEye {
+  selector: string;
 }
