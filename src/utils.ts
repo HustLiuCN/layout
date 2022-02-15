@@ -81,3 +81,10 @@ export function _findNoRightItem(list: IWordRect[]) {
 export function _findNoBottomItem(list: IWordRect[]) {
   return list.filter(li => !list.find(o => o.id !== li.id && o.x === li.x && o.y === (li.y + li.h)))
 }
+
+/** 两点之间距离 */
+export function _distance(a: IPos, b: IPos) {
+  return Math.sqrt(
+    Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2)
+  );
+}

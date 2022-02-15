@@ -6,7 +6,8 @@ const webpackConfig = {
 	entry: {
 		word: './src/word',
 		line: './src/line',
-		simulator: './src/simulator',
+		fisheye: './src/fisheye',
+		wave: './src/wave',
 	},
 	output: {
 		filename: '[name].build.js',
