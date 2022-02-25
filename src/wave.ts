@@ -28,18 +28,18 @@ class Wave {
     // this.fetchData().then(() => this.render());
     const { cvs, step } = this;
     const { rect } = cvs;
-    const xn = 10;
+    const xn = 1;
     const map = [];
-    for (let j = 0; j < xn; j ++) {
+    for (let x = 0; x < xn; x ++) {
       const yn = 10;
       const list = [];
-      for (let i = 0; i < yn; i ++) {
-        const order = (i + step + j) % 10;
+      for (let y = 0; y < yn; y ++) {
+        const order = (y + step + x) % 10;
         const sin = Math.sin(2 * PI * order / 10);
         const node: ICircle = {
-          id: `${i}`,
-          x: (j + 1) * rect.width / (xn + 1),
-          y: rect.height - (i + 1) * 40 - sin * 10,
+          id: `${x}-${y}`,
+          x: rect.width / 2 + (x - xn / 2) * (rect.width / 10 - y * 2),
+          y: rect.height - (y + 1) * 20 - sin * 10,
           r: Math.abs(8 * sin) + 1,
           fillColor: colors[0],
         };
@@ -81,8 +81,8 @@ class Wave {
 
     this.init();
 
-    window.requestAnimationFrame(this.render);
-    // this.ani();
+    // window.requestAnimationFrame(this.render);
+    this.ani();
   }
 };
 

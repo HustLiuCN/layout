@@ -4,8 +4,9 @@ import colors from './color';
 import { _distance } from './utils';
 
 const { get } = axios;
+const PI = Math.PI;
 const R = 100;
-const D = 1;
+const D = PI / 4;
 
 class FishEye {
   constructor({
