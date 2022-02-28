@@ -5,9 +5,8 @@ import { _distance } from './utils';
 
 const { get } = axios;
 const R = 10;
-const D = 1;
 
-const RANGE_Y = 100;
+const RANGE_Y = 40;
 
 const PI = Math.PI;
 
@@ -28,23 +27,33 @@ class Wave {
 
   init = () => {
     // this.fetchData().then(() => this.render());
-    const { cvs, step, } = this;
+    const { cvs, step } = this;
     const { rect } = cvs;
 
-    const nodes = [];
-    const n = 20;
-    for (let i = 0; i < n; i ++) {
-      const scale = (i + step) % 10;
-      const sin = Math.sin(2 * PI * scale / 10)
-      const node: ICircle = {
-        id: `${i}`,
-        x: rect.width * (i + 1) / (n + 1),
-        y: rect.height / 2 - i * 4 + sin * (RANGE_Y - (i / n) * 20),
-        r: R - i / n * 4,
-      };
-      nodes.push(node);
+
+    const list = [];
+    const m = 1;   // x
+    const n = 10;   // y
+    for (let x = 0; x < m; x ++) {
+      const nodes = [];
+      for (let i = 0; i < n; i ++) {
+        const scale = i + step + x / (m / 2) * PI;
+        const sin = Math.sin(scale);
+        const node: ICircle = {
+          id: `${i}`,
+          // x: rect.width * (i + 1) / (n + 1),
+          x: rect.width / 2 + (x - m / 2) * ((rect.width - i * 20) / (m + 1)),
+          y: (rect.height - RANGE_Y) - i * RANGE_Y - sin * (RANGE_Y - i / n * 20),
+          r: (R - i / n * 6) * (sin + 1) / 2,
+          fillColor: '#ddd',
+        };
+        nodes.push(node);
+      }
+      list.push(nodes);
     }
-    this.nodes = nodes;
+
+    // this.nodes = nodes;
+    this.map = list;
   }
 
   ani = () => {
@@ -71,9 +80,9 @@ class Wave {
     // }
     this.step += 0.02;
     // 绘制节点
-    // map.forEach(nodes => {
+    map.forEach(nodes => {
       nodes.forEach(node => cvs.paintCircle(node));
-    // });
+    });
 
     this.init();
 
