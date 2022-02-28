@@ -32,7 +32,7 @@ class Wave {
 
 
     const list = [];
-    const m = 1;   // x
+    const m = 10;   // x
     const n = 10;   // y
     for (let x = 0; x < m; x ++) {
       const nodes = [];
@@ -41,11 +41,10 @@ class Wave {
         const sin = Math.sin(scale);
         const node: ICircle = {
           id: `${i}`,
-          // x: rect.width * (i + 1) / (n + 1),
-          x: rect.width / 2 + (x - m / 2) * ((rect.width - i * 20) / (m + 1)),
+          x: rect.width / 2 + (x - m / 2) * ((rect.width - i * 30) / (m + 1)),
           y: (rect.height - RANGE_Y) - i * RANGE_Y - sin * (RANGE_Y - i / n * 20),
           r: (R - i / n * 6) * (sin + 1) / 2,
-          fillColor: '#ddd',
+          fillColor: colors[x % 9],
         };
         nodes.push(node);
       }
