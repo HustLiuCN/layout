@@ -6,7 +6,7 @@ import { _distance } from './utils';
 const { get } = axios;
 const PI = Math.PI;
 const R = 100;
-const D = PI / 4;
+const D = PI / 2;
 
 class FishEye {
   constructor({
@@ -87,7 +87,8 @@ class FishEye {
         const cos = (node.x - ox) / dist;
         const sin = (node.y - oy) / dist;
         // const ml = ((1 + D) * dist * R) / (dist + R)
-        const ml = R * Math.sin(dist * (1 + D) / R);
+        const ml = R * Math.sin(dist * D / R);
+        // const ml = (R * (D + 1) * (dist / R)) / (D * (dist / R) + 1);
         if (dist <= R) {
           const tmpNode = { ...node };
           tmpNode.x = cos * ml + ox;
